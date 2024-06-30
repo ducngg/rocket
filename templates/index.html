@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Upload an Image to Analyze</h1>
+    <form id="upload-form" action="/upload/" enctype="multipart/form-data" method="post">
+        <input type="file" name="file">
+        <button type="submit">Upload</button>
+    </form>
+    <img id="uploaded-image" style="max-width: 500px; display: none;">
+    <form id="analyze-form" action="/analyze/" method="post" style="display: none;">
+        <input type="hidden" name="file_url" id="file-url">
+        <button type="submit">Analyze</button>
+    </form>
+    <img id="analyzed-image" style="max-width: 500px; display: none;">
+    <script>
+        document.getElementById("upload-form").onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/upload/', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            document.getElementById("uploaded-image").src = result.file_url;
+            document.getElementById("uploaded-image").style.display = "block";
+            document.getElementById("file-url").value = result.file_url;
+            document.getElementById("analyze-form").style.display = "block";
+        };
+
+        document.getElementById("analyze-form").onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/analyze/', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            document.getElementById("analyzed-image").src = result.analyzed_image_url;
+            document.getElementById("analyzed-image").style.display = "block";
+        };
+    </script>
+</body>
+</html>
