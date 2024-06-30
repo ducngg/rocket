@@ -1,4 +1,8 @@
 const BACKEND_LINK = 'http://127.0.0.1:5000'; //Change if needed
+const ADDRESS_DEFAULT = 'Nhà Văn hóa Sinh viên TP.HCM, Lưu Hữu Phước, Đông Hoà, Dĩ An, Bình Dương, Vietnam';
+
+let base64String = document.getElementById('base64Input');
+let boundingBoxes = null;
 
 document.getElementById('fileInput').addEventListener('change', (event) => {
     let file = event.target.files[0]; //get file
@@ -7,7 +11,7 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
     preview.innerHTML = '';
     document.getElementById('status').innerText = '';
     document.getElementById('result').innerHTML = '';
-    document.getElementById('base64Input').value = '';
+    base64String.value = '';
 
     if (file) {
         let reader = new FileReader();
@@ -18,7 +22,7 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
             preview.appendChild(img);
 
             // Store the Base64 string in a hidden input
-            document.getElementById('base64Input').value = e.target.result.split(',')[1];
+            base64String.value = e.target.result.split(',')[1];
         }
         //read the file --> decode to base64
         reader.readAsDataURL(file);
@@ -27,14 +31,15 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
 
 document.getElementById('uploadForm').addEventListener('submit', (event) => {
     event.preventDefault();
-    let base64String = document.getElementById('base64Input').value;
     //console.log(base64String);
-    if (!base64String) {
+    if (!base64String.value) {
         document.getElementById('status').innerText = "No file selected.";
         return;
     }
     let payload = {
-        "image": base64String
+        "image": base64String.value,
+        "time": new Date().toLocaleDateString(),
+        "address": ADDRESS_DEFAULT
     };
     document.getElementById('status').innerText = "Uploading...";
     //Call to backend (ML model)
@@ -48,19 +53,26 @@ document.getElementById('uploadForm').addEventListener('submit', (event) => {
     .then(response => response.json())
     .then(data => {
         document.getElementById('status').innerText = "";
-        //Should return image (image with boudning box) + button for more details
+        //Should return image (image with boudning box) + button for more details (not active)
         if (data.image) {
             let img = document.createElement('img');
             img.src = 'data:image/png;base64,' + data.image;
             document.getElementById('result').appendChild(img);
-            let button = document.createElement('button');
-            button.innerText = "Get Additional Info";
-            if (data.type === "grocery" || data.type === "restaurant") {
-                button.addEventListener('click', () => {
-                    getDetailedAnalysis("/" + data.type);
-                });
-                document.getElementById('result').appendChild(button);
-            }
+            // let button = document.createElement('button');
+            // button.innerText = "Get Additional Info";
+            // if (data.type === "grocery" || data.type === "restaurant") {
+            //     //button next
+            //     button.addEventListener('click', () => {
+            //         getDetailedAnalysis("/" + data.type);
+            //     });
+            //     document.getElementById('result').appendChild(button);
+            //     //Status next
+            //     let additionalStatus = document.createElement('p');
+            //     additionalStatus.id = 'nextStatus';
+            //     document.getElementById('result').appendChild(additionalStatus);
+
+            //     boundingBoxes = data.preds
+            // } 
         } else {
             document.getElementById('status').innerText = "Upload failed!";
         }
@@ -72,28 +84,34 @@ document.getElementById('uploadForm').addEventListener('submit', (event) => {
     });
 });
 
-function getDetailedAnalysis(endpoint) {
-    document.getElementById('status').innerText = "Fetching additional info...";
-    fetch(BACKEND_LINK + endpoint, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('status').innerText = "";
-        if (data.info) {
-            let infoText = document.createElement('p');
-            infoText.innerText = data.info;
-            document.getElementById('result').appendChild(infoText);
-        } else {
-            document.getElementById('status').innerText = "Failed to fetch additional info!";
-        }
-        //console.log(data);
-    })
-    .catch(error => {
-        document.getElementById('status').innerText = "Failed to fetch additional info!";
-        //console.error(error);
-    });
-}
+// function getDetailedAnalysis(endpoint) {
+//     document.getElementById('status').innerText = "Fetching additional info...";
+
+//     payload = {
+//         "image": base64String.value,
+//         "time": boundingBoxes
+//     };
+//     fetch(BACKEND_LINK + endpoint, {
+//         method: 'GET',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify(payload)
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         document.getElementById('nextStatus').innerText = "";
+//         if (data.info) {
+//             let infoText = document.createElement('p');
+//             infoText.innerText = data.info;
+//             document.getElementById('result').appendChild(infoText);
+//         } else {
+//             document.getElementById('nextStatus').innerText = "Failed to fetch additional info!";
+//         }
+//         //console.log(data);
+//     })
+//     .catch(error => {
+//         document.getElementById('status').innerText = "Failed to fetch additional info!";
+//         //console.error(error);
+//     });
+// }
