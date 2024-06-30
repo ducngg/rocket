@@ -1,4 +1,4 @@
-const BACKEND_LINK = 'http://127.0.0.1:5000'; //Change if needed
+const BACKEND_LINK = 'https://c0ef-34-125-214-167.ngrok-free.app'; //Change if needed
 const ADDRESS_DEFAULT = 'Nhà Văn hóa Sinh viên TP.HCM, Lưu Hữu Phước, Đông Hoà, Dĩ An, Bình Dương, Vietnam';
 
 let base64String = document.getElementById('base64Input');
@@ -31,7 +31,7 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
 
 document.getElementById('uploadForm').addEventListener('submit', (event) => {
     event.preventDefault();
-    //console.log(base64String);
+    console.log(base64String);
     if (!base64String.value) {
         document.getElementById('status').innerText = "No file selected.";
         return;
@@ -46,6 +46,9 @@ document.getElementById('uploadForm').addEventListener('submit', (event) => {
     fetch(BACKEND_LINK + "/process", {
         method: 'POST',
         headers: {
+            'Access-Control-Allow-Origin':  'http://127.0.0.1:5500',
+            'Access-Control-Request-Method': 'POST',
+            'Access-Control-Request-Headers': 'Content-Type, Authorization',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
